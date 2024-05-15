@@ -1,26 +1,28 @@
 import streamlit as st
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import fiona
-fiona.drvsupport.supported_drivers['ESRI Shapefile'] = 'rw'
+import pandas as pd
+from connection import connect_to_database as connect_db
+from other_fun import fetch_years, fetch_states, fetch_and_display_transaction_data
+from india_states import indian_states
 
+# Show Page 1 with dropdowns and transaction data
 def show_page():
-    st.title("Page 1")
+    st.write("Transaction details")
+    st.write("Select a year and state to view transaction data:")
+
+    # connect to Database
+    connection = connect_db()
     
-    india_states = gpd.read_file('D:\\Projects\\phonepe_pulse\\india_st.shx')
+    # Dropdowns for selecting year and state
+    selected_year = st.selectbox("Select Year", [""] + fetch_years(connection))
+    selected_state = st.selectbox("Select State", [""] + fetch_states(connection))
+    
+    if selected_state and selected_year:
+        # Fetch and display transaction data based on selected year and state
+        transaction_data = fetch_and_display_transaction_data(connection, selected_year, selected_state)
+        st.write(f"Transaction data for {selected_state} in {selected_year}:")
+        df = pd.DataFrame(transaction_data, columns=["Transaction Type", "Total Transaction Amount"])
+        st.dataframe(df)
+        indian_states()
 
-
-    # Read shapefile for India's districts
-    #india_districts = gpd.read_file('path_to_districts_shapefile.shp')
-
-    # Plotting India's states
-    fig, ax = plt.subplots(1, 1)
-    india_states.plot(ax=ax, color='white', edgecolor='black')
-    ax.set_title('India States')
-
-    # Plotting India's districts
-    # fig, ax = plt.subplots(1, 1)
-    # india_districts.plot(ax=ax, color='blue', edgecolor='black')
-    # ax.set_title('India Districts')
-
-    st.pyplot(fig)
+if __name__ == "__main__":
+    show_page()
