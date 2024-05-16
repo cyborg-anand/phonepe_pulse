@@ -31,17 +31,34 @@ def format_transaction_amount(amount):
     
 # Fetch and display transaction data based on selected year and state
 def fetch_and_display_transaction_data(connection, selected_year, selected_state):
-    query = f"""
-        SELECT Transaction_type, SUM(Transaction_amount) AS Total_Transaction_Amount
+    
+    query1 = f"""
+        SELECT Transaction_type, SUM(Transaction_amount) AS Total_Amount
         FROM agg_transaction_data
         WHERE Year = '{selected_year}' AND State = '{selected_state}'
         GROUP BY Transaction_type;
     """
+    
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        cursor.execute(query1)
         transaction_data = cursor.fetchall()
     
     # Format transaction amount
     formatted_data = [(transaction_type, format_transaction_amount(amount)) for transaction_type, amount in transaction_data]
-    
+
     return formatted_data
+def fetch_map_data(connection, selected_year, selected_state):
+    query2 = f"""
+        SELECT State, SUM(Transaction_amount) AS Total_Transaction_Amount
+        FROM agg_transaction_data
+        WHERE Year = '{selected_year}' AND State = '{selected_state}'
+        GROUP BY State AND Year;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query2)
+        transaction_data1 = cursor.fetchall()
+    formatted_data1 =[(State, format_transaction_amount(amount1)) for State, amount1 in  transaction_data1]
+
+    return formatted_data1 
+
+    
